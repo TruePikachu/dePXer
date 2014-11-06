@@ -151,7 +151,7 @@ const char* PXer::getCompressed(size_t& n) const {
 	}
 }
 
-const char* PXer::getCompressed(size_t& n) {
+const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 	if(cIsOK) {
 		n=cSize;
 		return cData;

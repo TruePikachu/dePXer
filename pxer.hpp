@@ -24,7 +24,7 @@ class PXer {
 		const char*	getDecompressed	(size_t&) const;
 		const char*	getDecompressed	(size_t&);
 		const char*	getCompressed	(size_t&) const;
-		const char*	getCompressed	(size_t&);
+		const char*	getCompressed	(size_t&,bool=false);
 
 		PXer&		setDecompressed	(const char*,size_t);
 		PXer&		setCompressed	(const char*,size_t);

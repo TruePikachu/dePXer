@@ -163,7 +163,7 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 				cFlag[i]=i+0xF-8;
 		// Our compressed data is at MOST 12.5% longer than the decompressed
 		// (this is for every command bit being 1)
-		cSize=dSize*9/8 + 1;
+		cSize=dSize*2 + 16;
 		cData=new char[cSize];
 		char *writePtr = cData;		// Where we are writing data
 		char *wCmdBit;			// Where we are writing the cmd bit
@@ -179,11 +179,22 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 			// TODO Code this up
 			
 			// Check if we can use the 2nib copy
-			// TODO Code this up
-
+			{	int nibs[4];
+				nibs[0]=(*(readPtr  )>>4)&0xF;
+				nibs[1]=((*(readPtr++)>>0)&0xF)-nibs[0];
+				nibs[2]=((*(readPtr  )>>4)&0xF)-nibs[0];
+				nibs[3]=((*(readPtr--)>>0)&0xF)-nibs[0];
+				
+				if(!(nibs[1] | nibs[2] | nibs[3])) {
+					*(writePtr++) = (cFlag[0]<<4) | nibs[0];
+					--nBitsFree;
+				}
+				// TODO Other flags
+			}
 			// Use the 1-byte copy as a fallback
-			*(writePtr++) = *(readPtr++);
-			*wCmdBit |= 1 << --nBitsFree;
+			{	*(writePtr++) = *(readPtr++);
+				*wCmdBit |= 1 << --nBitsFree;
+			}
 		}
 		// Finish up
 		n = writePtr-cData;

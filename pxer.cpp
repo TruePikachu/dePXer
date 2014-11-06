@@ -159,6 +159,14 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 		throw logic_error("PXer::getCompressed() unimplemented!");
 }
 
+const uint8_t* PXer::getControlNibs() const {
+	return cFlag;
+}
+
+uint8_t* PXer::getControlNibs() {
+	return cFlag;
+}
+
 PXer& PXer::setDecompressed(const char*p,size_t n) {
 	reset();
 	dData=new char[n];

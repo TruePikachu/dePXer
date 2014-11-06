@@ -161,8 +161,6 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 			// Set up computation sometime
 			for(int i=0;i<9;i++)
 				cFlag[i]=i+0xF-8;
-		// Our compressed data is at MOST 12.5% longer than the decompressed
-		// (this is for every command bit being 1)
 		cSize=dSize*2 + 16;
 		cData=new char[cSize];
 		char *writePtr = cData;		// Where we are writing data

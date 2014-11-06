@@ -155,8 +155,51 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 	if(cIsOK) {
 		n=cSize;
 		return cData;
-	} else
-		throw logic_error("PXer::getCompressed() unimplemented!");
+	} else {
+		if(computeFlags)
+			// FIXME Right now we are just using hardcoded control nibs
+			// Set up computation sometime
+			for(int i=0;i<9;i++)
+				cFlag[i]=i+0xF-8;
+		// Our compressed data is at MOST 12.5% longer than the decompressed
+		// (this is for every command bit being 1)
+		cSize=dSize*9/8 + 1;
+		cData=new char[cSize];
+		char *writePtr = cData;		// Where we are writing data
+		char *wCmdBit;			// Where we are writing the cmd bit
+		int nBitsFree=0;		// Number of bits left in the cmd
+		const char*readPtr = dData;	// Where we are reading data
+		while(readPtr<(dData+dSize)) {
+			// Move the command pointer, if needed
+			if(!nBitsFree) {
+				wCmdBit=writePtr++;
+				nBitsFree=8;
+			}
+			// Check if we can use the block copy
+			// I don't like the lack of a e.g. memstr()
+			size_t longestMatch=0;
+			off_t posMatch=0;
+			for(const char*scanner=dData;scanner<(readPtr-longestMatch);scanner++)
+				if(*scanner==*readPtr) {
+					// We matched one byte
+					// How many do we match?
+					int nMatched;
+					for(nMatched=1;scanner[nMatched-1]==readPtr[nMatched-1];nMatched++);
+					if(nMatched>=longestMatch) {
+						posMatch=readPtr-scanner;
+						longestMatch=nMatched;
+					}
+				}
+			if(longestMatch>=3) {
+				// We can likely block copy
+//				int16_t offset = -0x1000 + nbLow<<8 | *writePtr
+//				TODO TODO TODO TODO TODO TODO
+		}
+		// Finish up
+		n = writePtr-cData;
+		cSize=n;
+		return cData;
+	}
 }
 
 const uint8_t* PXer::getControlNibs() const {

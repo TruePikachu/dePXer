@@ -25,6 +25,8 @@ class PXer {
 		const char*	getDecompressed	(size_t&);
 		const char*	getCompressed	(size_t&) const;
 		const char*	getCompressed	(size_t&,bool=false);
+		const uint8_t[9]getControlNibs	() const;
+		uint8_t[9]	getControlNibs	();
 
 		PXer&		setDecompressed	(const char*,size_t);
 		PXer&		setCompressed	(const char*,size_t);

@@ -176,24 +176,14 @@ const char* PXer::getCompressed(size_t& n, bool computeFlags) {
 				nBitsFree=8;
 			}
 			// Check if we can use the block copy
-			// I don't like the lack of a e.g. memstr()
-			size_t longestMatch=0;
-			off_t posMatch=0;
-			for(const char*scanner=dData;scanner<(readPtr-longestMatch);scanner++)
-				if(*scanner==*readPtr) {
-					// We matched one byte
-					// How many do we match?
-					int nMatched;
-					for(nMatched=1;scanner[nMatched-1]==readPtr[nMatched-1];nMatched++);
-					if(nMatched>=longestMatch) {
-						posMatch=readPtr-scanner;
-						longestMatch=nMatched;
-					}
-				}
-			if(longestMatch>=3) {
-				// We can likely block copy
-//				int16_t offset = -0x1000 + nbLow<<8 | *writePtr
-//				TODO TODO TODO TODO TODO TODO
+			// TODO Code this up
+			
+			// Check if we can use the 2nib copy
+			// TODO Code this up
+
+			// Use the 1-byte copy as a fallback
+			*(writePtr++) = *(readPtr++);
+			*wCmdBit |= 1 << --nBitsFree;
 		}
 		// Finish up
 		n = writePtr-cData;

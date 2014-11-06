@@ -1,8 +1,8 @@
 #include "pxer.hpp"
 #include <cstring>
-#include <deque>
 #include <stdexcept>
 #include <stdint.h>
+#include <vector>
 using namespace std;
 
 void PXer::reset() {
@@ -68,8 +68,77 @@ const char* PXer::getDecompressed(size_t& n) {
 	if(dIsOK) {
 		n=dSize;
 		return dData;
-	} else
-		throw logic_error("PXer::getDecompressed() unimplemented!");
+	}
+	// Decompression algorithm
+	const char* readPos = cData;		// Position we read from
+	vector< char > dBuffer;			// Decompressed data buffer
+	char curCmdByte;			// Current command byte
+	int cmdBitsLeft=0;			// Number of bits remaining in the command byte
+	while(readPos<(cData+cSize)) {		// Main loop
+		// Handle the possible lack of command bits
+		if(!cmdBitsLeft) {
+			curCmdByte = *(readPos++);
+			cmdBitsLeft=8;
+		}
+		bool cmdBit = curCmdByte&0x80;
+		curCmdByte<<=1;cmdBitsLeft--;
+		if(cmdBit)
+			// Copy 1 byte to output
+			dBuffer.push_back(*(readPos++));
+		else {
+			// Use the next byte as instruction
+			uint8_t nbHigh = (*readPos & 0xF0) >> 4;
+			uint8_t nbLow = (*(readPos++) & 0xF);
+			// Check if nbHigh is a control flag
+			int ctlFlagID = -1;
+			for(int i=0;i<9;i++)
+				if(nbHigh==cFlag[i])
+					ctlFlagID=i;
+			if(ctlFlagID!=-1) {
+				// It is a control flag
+				// Add 4 nibs to output
+				uint8_t n[4];
+				n[0]=nbLow;
+				n[1]=nbLow;
+				n[2]=nbLow;
+				n[3]=nbLow;
+				switch(ctlFlagID) {
+					case 0:
+						break;
+					case 1:
+						for(int i=0;i<4;i++)
+							n[i]++;
+					case 2:
+					case 3:
+					case 4:
+						n[ctlFlagID-1]--;
+						break;
+					case 5:
+						for(int i=0;i<4;i++)
+							n[i]--;
+					case 6:
+					case 7:
+					case 8:
+						n[ctlFlagID-5]++;
+						break;
+				}
+				dBuffer.push_back((n[0]<<4) | n[1]);
+				dBuffer.push_back((n[2]<<4) | n[3]);
+			} else {
+				// It isn't a control flag
+				int16_t offset = -0x1000 + ((nbLow<<8) | (uint8_t)(*(readPos++)));
+				for(int i=0;i<(nbHigh+3);i++)
+					dBuffer.push_back(dBuffer[dBuffer.size()+offset]);
+			}
+		}
+	}
+	dSize = dBuffer.size();
+	dData = new char[dSize];
+	for(int i=0;i<dSize;i++)
+		dData[i]=dBuffer[i];
+	dIsOK=true;
+	n=dSize;
+	return dData;
 }
 
 const char* PXer::getCompressed(size_t& n) const {

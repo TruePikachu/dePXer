@@ -30,10 +30,11 @@ int main(int argc, char *argv[]) {
 		uint8_t flags[9];
 		fin.read((char*)flags,9);
 		uint32_t dLength=0;
-		if(type[0]=='P')
-			fin.read((char*)&dLength,4);
-		else
-			fin.read((char*)&dLength,2);
+		if(type[0]=='P') {
+			fin.read((char*)&dLength,4); cLength-=0x14;
+		} else {
+			fin.read((char*)&dLength,2); cLength-=0x12;
+		}
 		// Load the compressed data
 		char* inData = new char[cLength];
 		fin.read(inData,cLength);
